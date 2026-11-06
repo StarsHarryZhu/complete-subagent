@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Complete Subagent",
+    "description": "Standalone delegation tools delegate and delegate_fork: the cwd a parent passes is the only place the child may modify, writable_paths grants more up front, and anything else the child must ask its parent for. The parent can also choose the child's model and reasoning effort from those listed in the settings."
+  }
+}

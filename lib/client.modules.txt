@@ -1,0 +1,8 @@
+/** Bundled client modules (6):
+ *   client/host.js
+ *   client/index.js
+ *   client/locales.js
+ *   client/settings.js
+ *   client/styles.css
+ *   shared/settings.js
+ */

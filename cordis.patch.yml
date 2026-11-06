@@ -1,0 +1,11 @@
+# complete-subagent bundle layer: register the plugin as one top-level row.
+# This file is the `dsh.bundle.patch` layer (see package.json#dsh.bundle.patch).
+# The row is global on purpose: its delegation tools and the fence serve every
+# agent in every preset, and it never edits a preset's rows. Its browser half
+# (the settings page) loads on this row, whose specifier is the package name.
+# A bundle that mounts the plugin for its own preset sets `presets` (and, when
+# its children run another preset, `childPreset`, and when they run only listed
+# models, `ownModel: false`) on its row.
+- insert:
+    - id: complete-subagent
+      name: '@starsharryzhu/complete-subagent'

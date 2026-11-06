@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "完全子代理",
+    "description": "独立的子代理工具 delegate / delegate_fork：父代理传的 cwd 是子代理唯一能改的子工作区，writable_paths 可预先授权更多路径，其他地方要先向父代理申请；父代理还能从设置里列出的模型和推理强度中给子代理选。"
+  }
+}

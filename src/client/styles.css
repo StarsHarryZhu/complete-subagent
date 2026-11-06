@@ -1,0 +1,44 @@
+/* complete-subagent settings page. Colors come from the host's design tokens. */
+.complete-subagent-settings { display: flex; flex-direction: column; gap: 16px; font-size: 13px; }
+.complete-subagent-section { display: flex; flex-direction: column; gap: 8px; }
+.complete-subagent-section h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.complete-subagent-note { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; font-weight: 400; }
+.complete-subagent-error { color: var(--dsw-alias-state-error-primary); font-size: 12px; }
+
+.complete-subagent-models { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.complete-subagent-model {
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-2);
+}
+.complete-subagent-model-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.complete-subagent-model-name { font-weight: 500; }
+.complete-subagent-model-head code { color: var(--dsw-alias-label-secondary); font-size: 12px; overflow-wrap: anywhere; }
+.complete-subagent-model-head .complete-subagent-button { margin-left: auto; }
+.complete-subagent-tag {
+  padding: 0 6px; border-radius: 6px; font-size: 11px; line-height: 18px;
+  color: var(--dsw-alias-state-error-primary); border: 1px solid currentColor;
+}
+
+.complete-subagent-efforts { margin: 0; padding: 0; border: 0; display: flex; gap: 6px 14px; flex-wrap: wrap; }
+.complete-subagent-efforts legend { padding: 0; margin-bottom: 4px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; }
+.complete-subagent-check { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+
+.complete-subagent-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.complete-subagent-field { display: flex; flex-direction: column; gap: 4px; max-width: 360px; }
+.complete-subagent-field span { font-weight: 500; }
+.complete-subagent-add select, .complete-subagent-field input {
+  padding: 5px 8px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-2); color: inherit; font: inherit; max-width: 100%;
+}
+
+.complete-subagent-button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 0; border-radius: 7px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.complete-subagent-button:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.complete-subagent-button[data-primary] { border: 1px solid var(--dsw-alias-border-l4); }
+.complete-subagent-button:disabled { opacity: 0.5; cursor: default; }
+.complete-subagent-button:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary, var(--dsw-alias-label-primary)); outline-offset: -2px;
+}
+.complete-subagent-actions { display: flex; align-items: center; gap: 10px; }
