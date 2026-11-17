@@ -126,7 +126,9 @@ ctx.inject(['completeSubagent'], (child) => {
 
 ## 支持的宿主版本
 
-DeepSeek Harness 0.2.1-rc.5 及以后、0.3 以前。DSH Desktop 现在用的就是 rc.5。
+DeepSeek Harness 0.2.1-rc.5 及以后、0.3 以前。在 0.2.1-rc.5、0.2.2-rc.1、0.2.2-rc.2、0.2.2-rc.3 四个宿主上实测过派子代理、限制写入、申请和批准写权限（mock 模型）。
+
+0.2.2-rc.2 起宿主改了启动子代理的参数写法，0.1.0 在这些宿主上派不出子代理（报 `Cannot read properties of undefined (reading 'id')`）。0.1.1 两种写法一起传，新旧宿主都能用，请升级。
 
 rc.5 比 0.2.2-alpha.2 少三样东西，插件会自己判断并换一种做法，不用配置：
 

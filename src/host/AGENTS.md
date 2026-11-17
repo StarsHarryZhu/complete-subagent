@@ -14,6 +14,7 @@ The host modules. A delegation call decides the child's sub-workspace and `writa
 - An inherited binding holds no access of its own; the fence resolves it to the nearest ancestor's current access, and a broken chain leaves none.
 - The delegation result text is `started subagent <id>`, as the official tools write it.
 - Only a `spawn` start carries the configured `childPreset` as `agentPreset`; a `fork` start never selects a preset.
+- A start's task (`cwd`, `prompt`, `parent`, `agentPreset`, `agentOptions`, `maxDepth`) goes both at the top level of the spec, for hosts from 0.2.2-rc.2, and under `request`, for older ones; `delegate.ts` builds it once and `types.ts` mirrors both shapes.
 - A child's route goes only through the start's `agentOptions`, which both 0.2.1-rc.5 and 0.2.2-alpha.2 use for its first request; nothing selects a model afterwards.
 - `ownModel` off applies to `delegate` only. On the parent's own route the host hands down the parent's effort unless one is named, so `models.ts` names the effort there.
 - A model outside the list fails first in the tool's own `enum` check, with the host's "must be one of" message; the message in `models.ts` covers a call that gets past it.
@@ -47,5 +48,6 @@ The host modules. A delegation call decides the child's sub-workspace and `writa
 - Verified in the real web app, before the move to standalone tools: the fence, grants, requests, and storage with the host's own sandbox enforcing the narrowed policy (2026-10-29 to 2026-11-01).
 - Checked on the real rc.5 tool, prompt, projection, and sandbox-policy services (2026-11-02): `legacy.ts`, `scope.ts`, and the single-root grant, with stand-ins for agents and the subagent start.
 - Checked on real 0.2.1-rc.5 and 0.2.2-alpha.2 hosts with a mock model (2026-11-02): `delegate.ts` and `models.ts`, from the tool call to the child's first recorded request.
+- Fixed and checked on real 0.2.1-rc.5, 0.2.2-rc.1, 0.2.2-rc.2, and 0.2.2-rc.3 hosts with a mock model (2026-11-17): `delegate.ts` starts a child on each, where before it failed from 0.2.2-rc.2 on; the fence, a write-access request, its answer, and the grant worked on all four.
 - Open: `delegate.ts`, `models.ts`, `scope.ts`, `legacy.ts`, and inherited confinement are not yet verified in a real web app.
 - Goal later: nothing planned.

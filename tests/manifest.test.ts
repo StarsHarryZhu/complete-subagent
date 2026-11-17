@@ -7,9 +7,9 @@ const read = (path: string) => readFileSync(join(ROOT, path), 'utf8')
 const manifest = JSON.parse(read('package.json')) as Record<string, any>
 
 describe('package identity', () => {
-  it('is complete-subagent 0.1.0 for DeepSeek Harness 0.2.1-rc.5 up to 0.3', () => {
+  it('is complete-subagent 0.1.1 for DeepSeek Harness 0.2.1-rc.5 up to 0.3', () => {
     expect(manifest.name).toBe('@starsharryzhu/complete-subagent')
-    expect(manifest.version).toBe('0.1.0')
+    expect(manifest.version).toBe('0.1.1')
     expect(manifest.engines.dsh).toBe('>=0.2.1-rc.5 <0.3.0-0')
     expect(manifest.peerDependencies['@deepseek-ai/dsh-tools']).toBe(manifest.engines.dsh)
   })

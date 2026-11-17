@@ -1,6 +1,6 @@
 {
   "name": "@starsharryzhu/complete-subagent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Complete subagents for DeepSeek Harness: delegate and delegate_fork tools beside the official ones, where the cwd a parent gives a child is the only place the child may modify, writable_paths grants more up front, anything else needs the parent agent's permission, and the parent can choose the child's model and reasoning effort from the models listed in the settings.",
   "keywords": [
     "dsh-plugin",

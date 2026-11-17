@@ -8,7 +8,7 @@ The vitest specs. Module specs drive each host module with fake working-director
 
 - Never call a real model, the network, or the user's DSH home: specs that load the entry point `DSH_HOME` at a temporary directory.
 - Test directories live under the temp directory, which the fence always treats as writable, so out-of-reach paths must be spelled outside it.
-- Fakes honor the host contracts the plugin relies on, such as the agent being its own scope key, `agent/created` firing before a child's first step, and a child recording the agent preset its start selects, else its parent's. The plugin fake is a current host by default, and with `legacy` it behaves like 0.2.1-rc.5: no `presetForSession`, no `tools.resolve`, and `when` dropped.
+- Fakes honor the host contracts the plugin relies on, such as the agent being its own scope key, `agent/created` firing before a child's first step, and a child recording the agent preset its start selects, else its parent's. The plugin fake is a current host by default, reading a start's task at the top level of the spec; with `nestedStart` it reads it under `request`, as hosts before 0.2.2-rc.2 do, and with `legacy` it behaves like 0.2.1-rc.5: a nested start, no `presetForSession`, no `tools.resolve`, and `when` dropped. Each reads only its own shape, so a start missing it fails as on the real host.
 - The client spec reads `lib/client.js`, so run `node build.js` before the specs.
 
 ## 3. Contents
@@ -23,7 +23,7 @@ The vitest specs. Module specs drive each host module with fake working-director
 - `prompt.test.ts` — the delegation texts, the two contexts, and what a child is told reaches its grants.
 - `scope.test.ts` — the `presets`, `childPreset`, and `ownModel` readers, reading a session's preset on both kinds of host, and which sessions the scope serves.
 - `legacy.test.ts` — detecting an old host and the per-agent tool filters.
-- `plugin.test.ts` — `apply` end to end against a fake host: binding before start, fork with a chosen model, rebuilding on settings changes, visibility, a failed start, inherited confinement, the `presets` setting (empty, served presets, other presets), the `childPreset` setting (a router and its workers, fork and empty), the `ownModel` setting (delegate, fork, an empty list), the `completeSubagent` service (replacing the list, no-op without `childPreset`, dispose, failures, a 0.2.1-rc.5 host), a 0.2.1-rc.5 host (filters, preset selection, each step, dispose, grants), failures staying inside the plugin, and the disabled path.
+- `plugin.test.ts` — `apply` end to end against a fake host: binding before start, the same start on a host that reads the task under `request`, fork with a chosen model, rebuilding on settings changes, visibility, a failed start, inherited confinement, the `presets` setting (empty, served presets, other presets), the `childPreset` setting (a router and its workers, fork and empty), the `ownModel` setting (delegate, fork, an empty list), the `completeSubagent` service (replacing the list, no-op without `childPreset`, dispose, failures, a 0.2.1-rc.5 host), a 0.2.1-rc.5 host (filters, preset selection, each step, dispose, grants), failures staying inside the plugin, and the disabled path.
 - `client.test.tsx` — the built settings page: summary, adding a model, limiting efforts, saving, and the add list.
 - `manifest.test.ts` — package name, version, engine range, browser half, locale titles, bundle row, and built files.
 - `agents-md.test.ts` — every folder carries a four-section English AGENTS.md whose Contents list is true.

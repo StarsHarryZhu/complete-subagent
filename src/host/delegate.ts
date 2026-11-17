@@ -29,7 +29,7 @@ import {
   delegateDescription,
 } from './prompt.ts'
 import { DELEGATE_TOOLS } from './types.ts'
-import type { AgentLike, DelegateTool, LlmLike, SubagentsLike } from './types.ts'
+import type { AgentLike, DelegateTool, LlmLike, StartRequestLike, SubagentsLike } from './types.ts'
 
 /** What the delegation tools read. */
 export interface DelegateDeps extends AccessDeps {
@@ -114,19 +114,23 @@ export function createDelegateTool(tool: DelegateTool, models: readonly ChildMod
       const agentPreset = provider === 'spawn' ? deps.childPreset : undefined
       const childId = deps.newId?.() ?? randomUUID()
       deps.store.set({ version: 1, child: childId, parent: parent.session.id, workspace: access.workspace, grants: access.grants })
+      const task: StartRequestLike = {
+        ...access.cwd === undefined ? {} : { cwd: access.cwd },
+        prompt: [{ type: 'text', text: args.prompt }],
+        parent,
+        ...agentPreset === undefined ? {} : { agentPreset },
+        ...route === undefined ? {} : { agentOptions: route },
+        ...maxDepth === undefined ? {} : { maxDepth },
+      }
       try {
+        // The task goes both ways: hosts from 0.2.2-rc.2 read it at the top level and those before under
+        // `request`, and neither reads the other's fields, so one call starts the child on every host.
         const started = await deps.subagents.startActivation({
           provider,
           label: args.description,
           childId,
-          request: {
-            ...access.cwd === undefined ? {} : { cwd: access.cwd },
-            prompt: [{ type: 'text', text: args.prompt }],
-            parent,
-            ...agentPreset === undefined ? {} : { agentPreset },
-            ...route === undefined ? {} : { agentOptions: route },
-            ...maxDepth === undefined ? {} : { maxDepth },
-          },
+          ...task,
+          request: task,
           signal: exec.signal,
           delivery: 'parent',
         })

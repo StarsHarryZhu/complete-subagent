@@ -6,7 +6,7 @@ import type { CompleteSubagentService } from '../src/index.ts'
 import { currentCall, withinCall } from '../src/host/call-scope.ts'
 import { BindingStore, defaultStoreDirectory } from '../src/host/store.ts'
 import type { ChildModel } from '../src/shared/settings.ts'
-import type { ActivationSpecLike, AgentLike, LlmLike, SandboxPolicy, SandboxPolicyRequest, SessionLike, TextBlock, ToolCallLike } from '../src/host/types.ts'
+import type { ActivationSpecLike, AgentLike, LlmLike, SandboxPolicy, SandboxPolicyRequest, SessionLike, StartRequestLike, TextBlock, ToolCallLike } from '../src/host/types.ts'
 import { childAgent, fakeWorkingDirectory, parentAgent, tempDir } from './helpers.ts'
 
 type Listener = (...args: any[]) => unknown
@@ -22,12 +22,15 @@ function volatile<T>(value: T) {
  * A fake host with just the services and events the plugin uses, and a subagent
  * runtime that creates the child inside the start call. The child runs the
  * agent preset the start selects, else its parent's, as the host records it in
- * the child's header. With `legacy` it behaves like 0.2.1-rc.5: the registry has
- * no `presetForSession`, and `tools.register` drops `when`, leaving per-agent
+ * the child's header. It reads the start's task at the top level, as hosts from
+ * 0.2.2-rc.2 do; with `nestedStart` it reads it under `request`, as older ones
+ * do. With `legacy` it behaves like 0.2.1-rc.5: the start is nested, the registry
+ * has no `presetForSession`, and `tools.register` drops `when`, leaving per-agent
  * restrictions as the only way to hide a tool.
  */
-function fakeHost(root: string, options: { ownResolve?: boolean; failStart?: boolean; providers?: string[]; legacy?: boolean } = {}) {
+function fakeHost(root: string, options: { ownResolve?: boolean; failStart?: boolean; providers?: string[]; legacy?: boolean; nestedStart?: boolean } = {}) {
   const legacy = options.legacy === true
+  const nestedStart = legacy || options.nestedStart === true
   const failing = new Set<string>()
   const listeners = new Map<string, Listener[]>()
   const disposers: (() => void)[] = []
@@ -105,12 +108,15 @@ function fakeHost(root: string, options: { ownResolve?: boolean; failStart?: boo
         started.push({ spec, policyAtCreation: { mode: 'read-only', workspaceRoot: '' } })
         throw new Error('backend refused')
       }
+      // Like the real hosts, each generation reads only its own shape: a missing parent fails on its id.
+      const task: Partial<StartRequestLike> = nestedStart ? spec.request : { cwd: spec.cwd, prompt: spec.prompt, parent: spec.parent, agentPreset: spec.agentPreset, agentOptions: spec.agentOptions, maxDepth: spec.maxDepth }
+      const parent = task.parent as AgentLike
       const child: AgentLike = {
         id: spec.childId,
-        session: { id: spec.childId, header: { id: spec.childId, cwd: spec.request.parent.session.header.cwd, parentSession: spec.request.parent.id, origin: 'subagent', delegationDepth: 1 } },
+        session: { id: spec.childId, header: { id: spec.childId, cwd: parent.session.header.cwd, parentSession: parent.id, origin: 'subagent', delegationDepth: 1 } },
       }
-      workingDirectory.directories.set(child.id, spec.request.cwd ?? root)
-      live(child, spec.request.agentPreset ?? presets.get(spec.request.parent.id))
+      workingDirectory.directories.set(child.id, task.cwd ?? root)
+      live(child, task.agentPreset ?? presets.get(parent.id))
       await emit('agent/created', { agent: child, source: 'new' })
       started.push({ spec, policyAtCreation: policyOf(child) })
       return { childId: child.id }
@@ -227,9 +233,11 @@ describe('the plugin', () => {
     const result = await host.call('delegate', parent, { description: 'Write docs', prompt: 'go', cwd: 'sub', writable_paths: ['README.md'] })
     const [{ spec, policyAtCreation }] = host.started
     expect(result).toEqual({ kind: 'activation', subagentId: spec.childId })
-    expect(spec).toMatchObject({ provider: 'spawn', label: 'Write docs', delivery: 'parent', request: { cwd: join(root, 'sub'), prompt: [{ type: 'text', text: 'go' }], maxDepth: 1 } })
-    expect(spec.request.agentOptions).toBeUndefined()
-    expect(spec.request.agentPreset).toBeUndefined()
+    const task = { cwd: join(root, 'sub'), prompt: [{ type: 'text', text: 'go' }], parent, maxDepth: 1 }
+    expect(spec).toMatchObject({ provider: 'spawn', label: 'Write docs', delivery: 'parent', ...task })
+    expect(spec.request).toEqual(task)
+    expect(spec.agentOptions).toBeUndefined()
+    expect(spec.agentPreset).toBeUndefined()
     expect(existsSync(join(root, 'sub'))).toBe(true)
     expect(policyAtCreation.workspaceRoot).toBe(join(root, 'sub'))
 
@@ -256,6 +264,19 @@ describe('the plugin', () => {
     expect(host.resolve(child).workspaceRoot).toBe(root)
     expect(host.tools.size).toBe(0)
     expect(host.providers.size).toBe(0)
+  })
+
+  it('starts the same child on a host that reads the task under `request`, as before 0.2.2-rc.2', async () => {
+    const root = tempDir()
+    const host = fakeHost(root, { nestedStart: true })
+    apply(host.ctx as never, config([{ provider: 'ds', model: 'pro' }]) as never)
+    const parent = parentAgent('p1', root)
+    const result = await host.call('delegate', parent, { description: 'Write docs', prompt: 'go', cwd: 'sub', model: 'ds/pro' })
+    const [{ spec, policyAtCreation }] = host.started
+    expect(result).toEqual({ kind: 'activation', subagentId: spec.childId })
+    expect(spec.request).toEqual({ cwd: join(root, 'sub'), prompt: [{ type: 'text', text: 'go' }], parent, agentOptions: { provider: 'ds', model: 'pro' }, maxDepth: 1 })
+    expect(policyAtCreation.workspaceRoot).toBe(join(root, 'sub'))
+    expect(host.resolve(childAgent(spec.childId, parent)).workspaceRoot).toBe(join(root, 'sub'))
   })
 
   it('starts a fork on the fork backend, with the chosen model and effort', async () => {

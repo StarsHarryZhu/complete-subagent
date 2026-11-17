@@ -101,23 +101,31 @@ export interface TextBlock {
     readonly type: 'text';
     readonly text: string;
 }
-/** `SubagentActivationSpec` with a reserved child id, as this plugin fills it. */
-export interface ActivationSpecLike {
+/** `SubagentStartRequest`: the task part of a start, as this plugin fills it. */
+export interface StartRequestLike {
+    readonly cwd?: string;
+    readonly prompt: TextBlock[];
+    readonly parent: AgentLike;
+    /** Preset the child runs instead of the parent's; only a backend that does not inherit the parent's context accepts it. */
+    readonly agentPreset?: string;
+    readonly agentOptions?: RouteLike;
+    readonly maxDepth?: number;
+}
+/**
+ * `SubagentActivationSpec` with a reserved child id, as this plugin fills it.
+ * Hosts from 0.2.2-rc.2 read the task at the top level; older ones read it
+ * under `request` and ignore the top-level copy, and newer ones the reverse,
+ * so the plugin sends both.
+ */
+export interface ActivationSpecLike extends StartRequestLike {
     /** Registered backend: `spawn` (fresh child) or `fork` (inherits the conversation). */
     readonly provider: string;
     /** Short task label shown with the child. */
     readonly label: string;
     /** Reserved child session id, so the child is bound before it exists. */
     readonly childId: string;
-    readonly request: {
-        readonly cwd?: string;
-        readonly prompt: TextBlock[];
-        readonly parent: AgentLike;
-        /** Preset the child runs instead of the parent's; only a backend that does not inherit the parent's context accepts it. */
-        readonly agentPreset?: string;
-        readonly agentOptions?: RouteLike;
-        readonly maxDepth?: number;
-    };
+    /** The same task, for hosts before 0.2.2-rc.2. */
+    readonly request: StartRequestLike;
     readonly signal: AbortSignal;
     /** `parent`: the runtime notifies the parent model when the child finishes. */
     readonly delivery: 'parent';
